@@ -39,6 +39,7 @@ export interface RouterInterface extends Interface {
       | "setAave"
       | "setAmm"
       | "setPoolV3"
+      | "swapEthForLens"
       | "transferOwnership"
   ): FunctionFragment;
 
@@ -75,6 +76,10 @@ export interface RouterInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "swapEthForLens",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
@@ -101,6 +106,10 @@ export interface RouterInterface extends Interface {
   decodeFunctionResult(functionFragment: "setAave", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setAmm", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setPoolV3", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "swapEthForLens",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -222,6 +231,12 @@ export interface Router extends BaseContract {
 
   setPoolV3: TypedContractMethod<[pool_: AddressLike], [void], "nonpayable">;
 
+  swapEthForLens: TypedContractMethod<
+    [minOut: BigNumberish],
+    [bigint],
+    "payable"
+  >;
+
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -279,6 +294,9 @@ export interface Router extends BaseContract {
   getFunction(
     nameOrSignature: "setPoolV3"
   ): TypedContractMethod<[pool_: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "swapEthForLens"
+  ): TypedContractMethod<[minOut: BigNumberish], [bigint], "payable">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;

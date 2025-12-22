@@ -1,0 +1,31 @@
+{
+  "name": "web3-university-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "2.2.10",
+    "@tanstack/react-query": "^5.55.3",
+    "next": "15.1.6",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "viem": "2.38.0",
+    "wagmi": "2.19.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

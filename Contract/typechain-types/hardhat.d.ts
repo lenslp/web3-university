@@ -110,6 +110,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAMM__factory>;
     getContractFactory(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWETH__factory>;
+    getContractFactory(
       name: "Router",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Router__factory>;
@@ -121,6 +125,10 @@ declare module "hardhat/types/runtime" {
       name: "TestERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TestERC20__factory>;
+    getContractFactory(
+      name: "WETH9",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WETH9__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -243,6 +251,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IAMM>;
     getContractAt(
+      name: "IWETH",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWETH>;
+    getContractAt(
       name: "Router",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -257,6 +270,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.TestERC20>;
+    getContractAt(
+      name: "WETH9",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WETH9>;
 
     deployContract(
       name: "Ownable",
@@ -355,6 +373,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAMM>;
     deployContract(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWETH>;
+    deployContract(
       name: "Router",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Router>;
@@ -366,6 +388,10 @@ declare module "hardhat/types/runtime" {
       name: "TestERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "WETH9",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WETH9>;
 
     deployContract(
       name: "Ownable",
@@ -488,6 +514,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAMM>;
     deployContract(
+      name: "IWETH",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWETH>;
+    deployContract(
       name: "Router",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -502,6 +533,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "WETH9",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WETH9>;
 
     // default types
     getContractFactory(

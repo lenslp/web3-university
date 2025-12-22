@@ -11,3 +11,4 @@ export type { CourseMarket } from "./CourseMarket";
 export type { LENS } from "./LENS";
 export type { SimpleAMM } from "./SimpleAMM";
 export type { TestERC20 } from "./TestERC20";
+export type { WETH9 } from "./WETH9";

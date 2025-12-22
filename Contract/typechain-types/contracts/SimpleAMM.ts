@@ -28,6 +28,7 @@ export interface SimpleAMMInterface extends Interface {
     nameOrSignature:
       | "FEE_BPS"
       | "getAmountOut"
+      | "getReserves"
       | "initializePair"
       | "owner"
       | "pairs"
@@ -47,6 +48,10 @@ export interface SimpleAMMInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getAmountOut",
     values: [AddressLike, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getReserves",
+    values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "initializePair",
@@ -70,6 +75,10 @@ export interface SimpleAMMInterface extends Interface {
   decodeFunctionResult(functionFragment: "FEE_BPS", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getAmountOut",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getReserves",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -206,6 +215,12 @@ export interface SimpleAMM extends BaseContract {
     "view"
   >;
 
+  getReserves: TypedContractMethod<
+    [tokenA: AddressLike, tokenB: AddressLike],
+    [[bigint, bigint] & { reserveA: bigint; reserveB: bigint }],
+    "view"
+  >;
+
   initializePair: TypedContractMethod<
     [
       tokenA: AddressLike,
@@ -256,6 +271,13 @@ export interface SimpleAMM extends BaseContract {
   ): TypedContractMethod<
     [tokenIn: AddressLike, tokenOut: AddressLike, amountIn: BigNumberish],
     [bigint],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getReserves"
+  ): TypedContractMethod<
+    [tokenA: AddressLike, tokenB: AddressLike],
+    [[bigint, bigint] & { reserveA: bigint; reserveB: bigint }],
     "view"
   >;
   getFunction(

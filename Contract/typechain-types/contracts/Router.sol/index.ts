@@ -3,4 +3,5 @@
 /* eslint-disable */
 export type { IAMM } from "./IAMM";
 export type { IAaveLike } from "./IAaveLike";
+export type { IWETH } from "./IWETH";
 export type { Router } from "./Router";

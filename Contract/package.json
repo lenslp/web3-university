@@ -6,8 +6,10 @@
     "build": "hardhat compile",
     "test": "hardhat test",
     "node": "hardhat node",
-    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
-    "deploy:sepolia": "hardhat run scripts/deploy-sepolia.ts --network sepolia"
+    "copy-artifacts": "node scripts/copy-artifacts.js",
+    "postbuild": "pnpm copy-artifacts",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost && pnpm copy-artifacts",
+    "deploy:sepolia": "hardhat run scripts/deploy-sepolia.ts --network sepolia && pnpm copy-artifacts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

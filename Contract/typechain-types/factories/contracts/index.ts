@@ -8,3 +8,4 @@ export { CourseMarket__factory } from "./CourseMarket__factory";
 export { LENS__factory } from "./LENS__factory";
 export { SimpleAMM__factory } from "./SimpleAMM__factory";
 export { TestERC20__factory } from "./TestERC20__factory";
+export { WETH9__factory } from "./WETH9__factory";

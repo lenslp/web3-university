@@ -1,0 +1,22 @@
+{
+  "name": "web3-university",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web3-university-frontend dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm --filter web3-university-frontend lint",
+    "contracts:build": "pnpm --filter web3-university-contracts build",
+    "contracts:test": "pnpm --filter web3-university-contracts test",
+    "contracts:node": "pnpm --filter web3-university-contracts node",
+    "contracts:deploy:local": "pnpm --filter web3-university-contracts deploy:local",
+    "backend:dev": "pnpm --filter web3-university-backend dev",
+    "backend:build": "pnpm --filter web3-university-backend build",
+    "backend:start": "pnpm --filter web3-university-backend start",
+    "db:generate": "pnpm --filter web3-university-backend exec prisma generate",
+    "db:push": "pnpm --filter web3-university-backend exec prisma db push",
+    "db:migrate": "pnpm --filter web3-university-backend exec prisma migrate dev",
+    "db:studio": "pnpm --filter web3-university-backend exec prisma studio"
+  }
+}

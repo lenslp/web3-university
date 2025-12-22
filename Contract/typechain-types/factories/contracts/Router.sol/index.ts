@@ -3,4 +3,5 @@
 /* eslint-disable */
 export { IAMM__factory } from "./IAMM__factory";
 export { IAaveLike__factory } from "./IAaveLike__factory";
+export { IWETH__factory } from "./IWETH__factory";
 export { Router__factory } from "./Router__factory";
