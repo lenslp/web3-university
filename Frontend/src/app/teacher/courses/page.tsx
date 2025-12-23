@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
 import type React from 'react';
 import { useCourseMarket } from '@/hooks/useCourseMarket';
@@ -52,42 +52,8 @@ export default function MyCoursesPage() {
     setMounted(true);
   }, []);
 
-  // 监听创建成功
-  useEffect(() => {
-    if (isCourseSuccess) {
-      setIsCreating(false);
-      setFormData({ title: '', description: '', price: '', duration: '' });
-      setIsModalOpen(false);
-      // 重新加载课程列表和余额
-      loadTeacherCourses();
-      lensBalance.refetch?.();
-    }
-  }, [isCourseSuccess]);
-
-  // 监听编辑成功
-  useEffect(() => {
-    if (isUpdateSuccess) {
-      setIsUpdating(false);
-      setIsEditModalOpen(false);
-      setEditingCourse(null);
-      // 重新加载课程列表和余额
-      loadTeacherCourses();
-      lensBalance.refetch?.();
-    }
-  }, [isUpdateSuccess]);
-
-  // 监听删除成功
-  useEffect(() => {
-    if (isDeleteSuccess) {
-      setIsDeleting(false);
-      // 重新加载课程列表和余额
-      loadTeacherCourses();
-      lensBalance.refetch?.();
-    }
-  }, [isDeleteSuccess]);
-
   // 从链上加载教师课程（使用事件日志查询，效率更高）
-  const loadTeacherCourses = async () => {
+  const loadTeacherCourses = useCallback(async () => {
     if (!address || !publicClient || !courseMarketAddress) return;
     
     setIsLoading(true);
@@ -168,14 +134,57 @@ export default function MyCoursesPage() {
       setCourses([]);
     }
     setIsLoading(false);
-  };
+  }, [address, publicClient, courseMarketAddress, COURSE_MARKET_ABI]);
+
+  // 监听创建成功
+  useEffect(() => {
+    if (isCourseSuccess) {
+      setIsCreating(false);
+      setFormData({ title: '', description: '', price: '', duration: '' });
+      setIsModalOpen(false);
+      // 延迟以避免在 Hydrate 期间更新
+      const timer = setTimeout(() => {
+        loadTeacherCourses();
+        lensBalance.refetch?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isCourseSuccess, loadTeacherCourses, lensBalance]);
+
+  // 监听编辑成功
+  useEffect(() => {
+    if (isUpdateSuccess) {
+      setIsUpdating(false);
+      setIsEditModalOpen(false);
+      setEditingCourse(null);
+      // 延迟以避免在 Hydrate 期间更新
+      const timer = setTimeout(() => {
+        loadTeacherCourses();
+        lensBalance.refetch?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isUpdateSuccess, loadTeacherCourses, lensBalance]);
+
+  // 监听删除成功
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      setIsDeleting(false);
+      // 延迟以避免在 Hydrate 期间更新
+      const timer = setTimeout(() => {
+        loadTeacherCourses();
+        lensBalance.refetch?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isDeleteSuccess, loadTeacherCourses, lensBalance]);
 
   // 当地址变化时重新加载
   useEffect(() => {
     if (mounted && address && publicClient) {
       loadTeacherCourses();
     }
-  }, [address, mounted, publicClient]);
+  }, [mounted, address, publicClient, loadTeacherCourses]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

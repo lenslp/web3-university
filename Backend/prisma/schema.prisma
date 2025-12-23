@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Profile {
@@ -14,11 +15,18 @@ model Profile {
   bio           String   @default("") @db.Text
   avatar        String   @default("🧑") @db.VarChar(16)
   joinDate      String   @default("") @db.VarChar(32)
+  
+  // 学生相关字段
   totalCourses  Int      @default(0)
   totalStudying Int      @default(0)
   totalSpent    Int      @default(0)
   rating        Float    @default(0)
   achievements  String[] @default([])
+  
+  // 教师相关字段
+  soldCourses   Int      @default(0)
+  totalRevenue  Int      @default(0)
+  certifications String[] @default([])
 
   @@map("profiles")
 }

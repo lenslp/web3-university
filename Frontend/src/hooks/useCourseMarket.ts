@@ -2,71 +2,13 @@ import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useWal
 import { parseEther, encodeFunctionData } from 'viem';
 import CourseMarketArtifact from '@/contracts/CourseMarket.json';
 import LENSArtifact from '@/contracts/LENS.json';
+import AMMArtifact from '@/contracts/SimpleAMM.json';
+import WETHArtifact from '@/contracts/WETH9.json';
 
 const COURSE_MARKET_ABI = CourseMarketArtifact.abi;
 const LENS_TOKEN_ABI = LENSArtifact.abi;
-
-// SimpleAMM ABI (仅需要的函数)
-const AMM_ABI = [
-  {
-    inputs: [
-      { internalType: 'address', name: 'tokenIn', type: 'address' },
-      { internalType: 'address', name: 'tokenOut', type: 'address' },
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-    ],
-    name: 'getAmountOut',
-    outputs: [{ internalType: 'uint256', name: 'amountOut', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { internalType: 'address', name: 'tokenIn', type: 'address' },
-      { internalType: 'address', name: 'tokenOut', type: 'address' },
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-      { internalType: 'uint256', name: 'minOut', type: 'uint256' },
-    ],
-    name: 'swapExactInput',
-    outputs: [{ internalType: 'uint256', name: 'amountOut', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const;
-
-// WETH ABI
-const WETH_ABI = [
-  {
-    inputs: [],
-    name: 'deposit',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'uint256', name: 'amount', type: 'uint256' }],
-    name: 'withdraw',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { internalType: 'address', name: 'spender', type: 'address' },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
-    ],
-    name: 'approve',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-] as const;
+const AMM_ABI = AMMArtifact.abi;
+const WETH_ABI = WETHArtifact.abi;
 
 export function useCourseMarket() {
   const courseMarketAddress = process.env.NEXT_PUBLIC_COURSE_MARKET_ADDRESS as `0x${string}`;

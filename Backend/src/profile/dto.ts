@@ -1,4 +1,5 @@
-import { IsArray, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { IsArray, IsHexadecimal, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateProfileDto {
   @IsString()
@@ -48,11 +49,36 @@ export class UpdateProfileDto {
   @IsArray()
   @IsOptional()
   achievements?: string[];
+
+  // 教师相关字段
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  soldCourses?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  totalRevenue?: number;
+
+  @IsArray()
+  @IsOptional()
+  certifications?: string[];
 }
 
 export class SignedProfilePayload {
+  @IsString()
   address!: string;
+
+  @ValidateNested()
+  @Type(() => UpdateProfileDto)
   profile!: UpdateProfileDto;
+
+  @IsString()
+  @MaxLength(132)
   signature!: `0x${string}`;
+
+  @IsString()
+  @MaxLength(200)
   message!: string;
 }
