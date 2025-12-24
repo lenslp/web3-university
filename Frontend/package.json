@@ -19,6 +19,7 @@
     "wagmi": "2.19.3"
   },
   "devDependencies": {
+    "@soda/friendly-errors-webpack-plugin": "^1.8.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "18.3.12",

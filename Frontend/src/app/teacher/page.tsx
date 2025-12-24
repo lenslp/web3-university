@@ -28,6 +28,12 @@ export default function TeacherHome() {
               >
                 个人中心
               </Link>
+              <Link 
+                href="/teacher/finance"
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-3 rounded-lg text-lg hover:from-yellow-600 hover:to-orange-600 transition-all font-semibold inline-block"
+              >
+                理财中心
+              </Link>
           </div>
         </div>
 
@@ -62,6 +68,17 @@ export default function TeacherHome() {
               <h3 className="text-xl font-semibold text-white mb-3">安全保障</h3>
               <p className="text-gray-300 text-sm leading-relaxed">
                 链上智能合约保障，课程版权和收益安全
+              </p>
+            </div>
+          </div>
+
+          <div className="group bg-white/5 backdrop-blur-lg rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all hover:shadow-lg hover:shadow-yellow-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative p-6">
+              <div className="text-5xl mb-4">💰</div>
+              <h3 className="text-xl font-semibold text-white mb-3">LENS 理财</h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                一键将 LENS 收益质押到 AAVE，赚取稳定收益
               </p>
             </div>
           </div>

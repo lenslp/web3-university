@@ -55,33 +55,33 @@ export default function StudentCoursesPage() {
     const allCourses: StudentCourse[] = [];
 
     try {
-      // 查询所有 Purchased 事件以统计购买次数
-      const purchasedLogs = await publicClient.getLogs({
-        address: courseMarketAddress,
-        event: {
-          type: 'event',
-          name: 'Purchased',
-          inputs: [
-            { type: 'uint256', indexed: true, name: 'courseId' },
-            { type: 'address', indexed: true, name: 'student' },
-          ],
-        },
-        fromBlock: 'earliest',
-        toBlock: 'latest',
-      });
+      // // 查询所有 Purchased 事件以统计购买次数
+      // const purchasedLogs = await publicClient.getLogs({
+      //   address: courseMarketAddress,
+      //   event: {
+      //     type: 'event',
+      //     name: 'Purchased',
+      //     inputs: [
+      //       { type: 'uint256', indexed: true, name: 'courseId' },
+      //       { type: 'address', indexed: true, name: 'student' },
+      //     ],
+      //   },
+      //   fromBlock: 'earliest',
+      //   toBlock: 'latest',
+      // });
       
-      // 统计每门课程的购买次数和当前用户是否购买过
-      const soldCountMap = new Map<string, number>();
-      const userPurchasedSet = new Set<string>();
-      for (const purchaseLog of purchasedLogs) {
-        const { courseId, student } = purchaseLog.args as { courseId: bigint; student: string };
-        const key = courseId.toString();
-        soldCountMap.set(key, (soldCountMap.get(key) || 0) + 1);
+      // // 统计每门课程的购买次数和当前用户是否购买过
+      // const soldCountMap = new Map<string, number>();
+      // const userPurchasedSet = new Set<string>();
+      // for (const purchaseLog of purchasedLogs) {
+      //   const { courseId, student } = purchaseLog.args as { courseId: bigint; student: string };
+      //   const key = courseId.toString();
+      //   soldCountMap.set(key, (soldCountMap.get(key) || 0) + 1);
         
-        if (student?.toLowerCase() === address.toLowerCase()) {
-          userPurchasedSet.add(key);
-        }
-      }
+      //   if (student?.toLowerCase() === address.toLowerCase()) {
+      //     userPurchasedSet.add(key);
+      //   }
+      // }
 
       // 使用 getAllCourses 直接获取所有激活课程
       const courseInfos = (await publicClient.readContract({
@@ -122,7 +122,8 @@ export default function StudentCoursesPage() {
             author,
             uri,
             duration: parsedData.duration,
-            soldCount: soldCountMap.get(id.toString()) || 0,
+            soldCount: 0,
+            // soldCount: soldCountMap.get(id.toString()) || 0,
             isPurchased: hasAccess,
           });
         } catch (e) {

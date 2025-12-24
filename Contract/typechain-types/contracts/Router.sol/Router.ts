@@ -30,13 +30,16 @@ export interface RouterInterface extends Interface {
       | "USDT"
       | "WETH"
       | "aave"
+      | "aggregator"
       | "amm"
+      | "depositLensVia1Inch"
       | "depositToAaveFromLENS"
       | "depositToAaveV3FromLENS"
       | "owner"
       | "poolV3"
       | "renounceOwnership"
       | "setAave"
+      | "setAggregator"
       | "setAmm"
       | "setPoolV3"
       | "swapEthForLens"
@@ -51,7 +54,15 @@ export interface RouterInterface extends Interface {
   encodeFunctionData(functionFragment: "USDT", values?: undefined): string;
   encodeFunctionData(functionFragment: "WETH", values?: undefined): string;
   encodeFunctionData(functionFragment: "aave", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "aggregator",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "amm", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "depositLensVia1Inch",
+    values: [BigNumberish, BigNumberish, boolean, BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "depositToAaveFromLENS",
     values: [BigNumberish, BigNumberish, BigNumberish]
@@ -68,6 +79,10 @@ export interface RouterInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setAave",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAggregator",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "setAmm", values: [AddressLike]): string;
@@ -88,7 +103,12 @@ export interface RouterInterface extends Interface {
   decodeFunctionResult(functionFragment: "USDT", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "WETH", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "aave", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "aggregator", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "amm", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "depositLensVia1Inch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "depositToAaveFromLENS",
     data: BytesLike
@@ -104,6 +124,10 @@ export interface RouterInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setAave", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setAggregator",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setAmm", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setPoolV3", data: BytesLike): Result;
   decodeFunctionResult(
@@ -205,7 +229,20 @@ export interface Router extends BaseContract {
 
   aave: TypedContractMethod<[], [string], "view">;
 
+  aggregator: TypedContractMethod<[], [string], "view">;
+
   amm: TypedContractMethod<[], [string], "view">;
+
+  depositLensVia1Inch: TypedContractMethod<
+    [
+      amountIn: BigNumberish,
+      minUsdtOut: BigNumberish,
+      usePoolV3: boolean,
+      data: BytesLike
+    ],
+    [void],
+    "nonpayable"
+  >;
 
   depositToAaveFromLENS: TypedContractMethod<
     [amountIn: BigNumberish, minEthOut: BigNumberish, minUsdtOut: BigNumberish],
@@ -226,6 +263,8 @@ export interface Router extends BaseContract {
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   setAave: TypedContractMethod<[aave_: AddressLike], [void], "nonpayable">;
+
+  setAggregator: TypedContractMethod<[agg_: AddressLike], [void], "nonpayable">;
 
   setAmm: TypedContractMethod<[amm_: AddressLike], [void], "nonpayable">;
 
@@ -260,8 +299,23 @@ export interface Router extends BaseContract {
     nameOrSignature: "aave"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "aggregator"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "amm"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "depositLensVia1Inch"
+  ): TypedContractMethod<
+    [
+      amountIn: BigNumberish,
+      minUsdtOut: BigNumberish,
+      usePoolV3: boolean,
+      data: BytesLike
+    ],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "depositToAaveFromLENS"
   ): TypedContractMethod<
@@ -288,6 +342,9 @@ export interface Router extends BaseContract {
   getFunction(
     nameOrSignature: "setAave"
   ): TypedContractMethod<[aave_: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setAggregator"
+  ): TypedContractMethod<[agg_: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setAmm"
   ): TypedContractMethod<[amm_: AddressLike], [void], "nonpayable">;

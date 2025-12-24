@@ -12,10 +12,12 @@
     "deploy:sepolia": "hardhat run scripts/deploy-sepolia.ts --network sepolia && pnpm copy-artifacts"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.10.6",
+    "ethers": "^6.16.0",
     "hardhat": "^2.22.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"

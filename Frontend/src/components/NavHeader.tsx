@@ -25,7 +25,7 @@ export function NavHeader() {
         { href: '/student', id: 'home', label: '首页' },
         { href: '/student/courses', id: 'courses', label: '课程' },
         { href: '/student/buy-lens', id: 'buy-lens', label: '购买 LENS' },
-        { href: '/student/earnings', id: 'earnings', label: '收益' },
+        // { href: '/student/earnings', id: 'earnings', label: '收益' },
         { href: '/student/profile', id: 'profile', label: '个人中心' },
       ];
     }
@@ -33,6 +33,7 @@ export function NavHeader() {
       return [
         { href: '/teacher', id: 'home', label: '首页' },
         { href: '/teacher/courses', id: 'courses', label: '我的课程' },
+        { href: '/teacher/finance', id: 'finance', label: '理财中心' },
         { href: '/teacher/profile', id: 'profile', label: '个人中心' },
       ];
     }
@@ -53,6 +54,7 @@ export function NavHeader() {
       if (pathname === '/teacher') return 'home';
       if (pathname.startsWith('/teacher/courses')) return 'courses';
       if (pathname.startsWith('/teacher/profile')) return 'profile';
+      if (pathname.startsWith('/teacher/finance')) return 'finance';
     }
     return 'home';
   };

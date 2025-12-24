@@ -9,7 +9,7 @@ async function main() {
   const usdtAddr = process.env.USDT_SEPOLIA || "";
   if (!aavePool || !usdtAddr) throw new Error("Missing AAVE_POOL_SEPOLIA or USDT_SEPOLIA");
 
-  const ONE_M = ethers.parseEther("1000000");
+  const ONE_M = ethers.parseEther("100000000");
 
   // Deploy LENS
   const LENS = await ethers.getContractFactory("LENS");
@@ -35,9 +35,9 @@ async function main() {
   const wethAddr = await weth.getAddress();
   const ammAddr = await amm.getAddress();
 
-  await (await lens.approve(ammAddr, ethers.parseEther("500000"))).wait();
-  await (await weth.approve(ammAddr, ethers.parseEther("10000"))).wait();
-  await (await amm.initializePair(lensAddr, wethAddr, ethers.parseEther("500000"), ethers.parseEther("10000"))).wait();
+  await (await lens.approve(ammAddr, ethers.parseEther("50000000"))).wait();
+  await (await weth.approve(ammAddr, ethers.parseEther("100"))).wait();
+  await (await amm.initializePair(lensAddr, wethAddr, ethers.parseEther("50000000"), ethers.parseEther("100"))).wait();
   console.log("LENS/WETH pair initialized");
 
   // For WETH/USDT we need to use the real USDT on Sepolia; check if we have it; if not, skip or use faucet

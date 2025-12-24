@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount, usePublicClient } from 'wagmi';
 import type React from 'react';
 import { useCourseMarket } from '@/hooks/useCourseMarket';
@@ -21,6 +21,9 @@ export default function MyCoursesPage() {
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const { createCourse, isCourseSuccess, isCourseLoading, courseMarketAddress, COURSE_MARKET_ABI, updateCourse, deactivateCourse, useLensBalance, isUpdateSuccess, isDeleteSuccess, updateCourseRaw, deactivateCourseRaw } = useCourseMarket();
+
+  // 固定 ABI 引用，避免依赖变动导致的无限 effect 重跑
+  const courseMarketAbiMemo = useMemo(() => COURSE_MARKET_ABI, []);
 
   const [mounted, setMounted] = useState(false);
   const lensBalance = useLensBalance(address);
@@ -61,35 +64,35 @@ export default function MyCoursesPage() {
 
     try {
       // 查询所有日志，然后过滤 Purchased 事件
-      const allLogs = await publicClient.getLogs({
-        address: courseMarketAddress,
-        fromBlock: 'earliest',
-        toBlock: 'latest',
-      });
+      // const allLogs = await publicClient.getLogs({
+      //   address: courseMarketAddress,
+      //   fromBlock: 'earliest',
+      //   toBlock: 'latest',
+      // });
 
-      // 统计每门课程的购买次数
-      const soldCountMap = new Map<string, number>();
-      console.log(allLogs, 'aaaaaccccc');
+      // // 统计每门课程的购买次数
+      // const soldCountMap = new Map<string, number>();
+      // console.log(allLogs, 'aaaaaccccc');
       
-      // 过滤 Purchased 事件（根据事件签名）
-      // 事件签名: Purchased(uint256 indexed courseId, address indexed student)
-      for (const log of allLogs) {
-        if (log.topics && log.topics.length >= 2 && log.data && log.topics[1]) {
-          try {
-            // 从 topics[1] 解析 courseId (indexed 参数)
-            const courseId = BigInt(log.topics[1]);
-            const key = courseId.toString();
-            soldCountMap.set(key, (soldCountMap.get(key) || 0) + 1);
-          } catch (e) {
-            // 忽略无法解析的日志
-          }
-        }
-      }
+      // // 过滤 Purchased 事件（根据事件签名）
+      // // 事件签名: Purchased(uint256 indexed courseId, address indexed student)
+      // for (const log of allLogs) {
+      //   if (log.topics && log.topics.length >= 2 && log.data && log.topics[1]) {
+      //     try {
+      //       // 从 topics[1] 解析 courseId (indexed 参数)
+      //       const courseId = BigInt(log.topics[1]);
+      //       const key = courseId.toString();
+      //       soldCountMap.set(key, (soldCountMap.get(key) || 0) + 1);
+      //     } catch (e) {
+      //       // 忽略无法解析的日志
+      //     }
+      //   }
+      // }
 
       // 使用合约的 getAuthorCourses 函数一次性获取当前教师的所有课程数据（最高效）
       const coursesData = (await publicClient.readContract({
         address: courseMarketAddress,
-        abi: COURSE_MARKET_ABI,
+        abi: courseMarketAbiMemo,
         functionName: 'getAuthorCourses',
         args: [address],
       })) as any[];
@@ -118,7 +121,8 @@ export default function MyCoursesPage() {
             author: address,
             uri,
             duration: parsedData.duration,
-            soldCount: soldCountMap.get(courseId.toString()) || 0,
+            soldCount: 0,
+            // soldCount: soldCountMap.get(courseId.toString()) || 0,
           });
         } catch (e) {
           // 跳过无效数据
@@ -134,7 +138,7 @@ export default function MyCoursesPage() {
       setCourses([]);
     }
     setIsLoading(false);
-  }, [address, publicClient, courseMarketAddress, COURSE_MARKET_ABI]);
+  }, [address, publicClient, courseMarketAddress]);
 
   // 监听创建成功
   useEffect(() => {
@@ -149,7 +153,7 @@ export default function MyCoursesPage() {
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [isCourseSuccess, loadTeacherCourses, lensBalance]);
+  }, [isCourseSuccess]);
 
   // 监听编辑成功
   useEffect(() => {
@@ -164,7 +168,7 @@ export default function MyCoursesPage() {
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [isUpdateSuccess, loadTeacherCourses, lensBalance]);
+  }, [isUpdateSuccess]);
 
   // 监听删除成功
   useEffect(() => {
@@ -177,14 +181,14 @@ export default function MyCoursesPage() {
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [isDeleteSuccess, loadTeacherCourses, lensBalance]);
+  }, [isDeleteSuccess]);
 
   // 当地址变化时重新加载
   useEffect(() => {
     if (mounted && address && publicClient) {
       loadTeacherCourses();
     }
-  }, [mounted, address, publicClient, loadTeacherCourses]);
+  }, [mounted, address, publicClient]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

@@ -15,7 +15,7 @@ export class ProfileService {
     const now = new Date();
     const fallback: Profile = {
       walletAddress: lower,
-      name: 'Unnamed User',
+      name: '未设置',
       email: '',
       bio: '',
       avatar: '🧑',
@@ -25,6 +25,9 @@ export class ProfileService {
       totalSpent: 0,
       rating: 0,
       achievements: [],
+      soldCourses: 0,
+      totalRevenue: 0,
+      certifications: [],
     };
     return fallback;
   }

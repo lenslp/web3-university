@@ -27,6 +27,7 @@ contract Router is Ownable {
     IAMM public amm;
     IAaveLike public aave; // local mock pool
     IPool public poolV3;   // real Aave v3 pool
+    address public aggregator; // 1inch Aggregation Router
 
     constructor(address lens, address weth, address usdt, address amm_, address aave_, address owner_) Ownable(owner_) {
         LENS = IERC20(lens);
@@ -41,6 +42,7 @@ contract Router is Ownable {
     function setAmm(address amm_) external onlyOwner { amm = IAMM(amm_); }
     function setAave(address aave_) external onlyOwner { aave = IAaveLike(aave_); }
     function setPoolV3(address pool_) external onlyOwner { poolV3 = IPool(pool_); }
+    function setAggregator(address agg_) external onlyOwner { aggregator = agg_; }
 
     function depositToAaveFromLENS(uint256 amountIn, uint256 minEthOut, uint256 minUsdtOut) external {
         require(amountIn > 0, "amount=0");
@@ -70,6 +72,57 @@ contract Router is Ownable {
         USDT.approve(address(poolV3), usdtOut);
         poolV3.supply(address(USDT), usdtOut, msg.sender, 0);
         emit Deposited(msg.sender, amountIn, ethOut, usdtOut);
+    }
+
+    /**
+     * @notice 通过 1inch 聚合器完成 LENS→USDT，然后存入 AAVE v3（或本地池）
+     * @dev 依赖外部通过 1inch API 构造的 calldata。该 calldata 应以 Router 为调用者（fromAddress=Router），
+     *      并将产出 USDT 发送到 Router 地址（receiver=Router）。本函数会校验最终 USDT 余额 >= minUsdtOut。
+     * @param amountIn 用户希望投入的 LENS 数量
+     * @param minUsdtOut 滑点保护的最小 USDT 输出
+     * @param usePoolV3 是否使用 AAVE v3 Pool（true）或本地 MockAave（false）
+     * @param data 1inch 聚合器的完整调用数据（calldata）
+     */
+    function depositLensVia1Inch(
+        uint256 amountIn,
+        uint256 minUsdtOut,
+        bool usePoolV3,
+        bytes calldata data
+    ) external {
+        require(amountIn > 0, "amount=0");
+        require(aggregator != address(0), "aggregator=0");
+
+        // 1) 从用户拉取 LENS
+        require(LENS.transferFrom(msg.sender, address(this), amountIn), "pull LENS");
+
+        // 2) 允许聚合器花费 LENS（为避免残留授权，可设置为本次额度；如需性能可改为无限额并在运营上管控）
+        LENS.approve(aggregator, amountIn);
+
+        // 3) 记录调用前 USDT 余额
+        uint256 usdtBefore = USDT.balanceOf(address(this));
+
+        // 4) 调用 1inch 聚合器
+        (bool ok, bytes memory ret) = aggregator.call(data);
+        require(ok, "agg call fail");
+        // 可选：解析 ret 以获取兑换详情；这里不强制
+
+        // 5) 校验 USDT 最小产出
+        uint256 usdtAfter = USDT.balanceOf(address(this));
+        uint256 usdtOut = usdtAfter - usdtBefore;
+        require(usdtOut >= minUsdtOut, "slippage");
+
+        // 6) 存入 AAVE 或本地池，并将 aUSDT/代币记到用户
+        if (usePoolV3) {
+            require(address(poolV3) != address(0), "poolV3=0");
+            USDT.approve(address(poolV3), usdtOut);
+            poolV3.supply(address(USDT), usdtOut, msg.sender, 0);
+        } else {
+            USDT.approve(address(aave), usdtOut);
+            aave.supply(usdtOut);
+            IERC20(aave.aUSDT()).transfer(msg.sender, usdtOut);
+        }
+        // 7) 事件（注意：此处 ethOut 不适用 1inch 路径，统一以 0 标记或另行扩展事件）
+        emit Deposited(msg.sender, amountIn, 0, usdtOut);
     }
 
     /**

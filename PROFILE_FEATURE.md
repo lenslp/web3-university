@@ -166,6 +166,189 @@ PORT=3001
 3. **数据初始化**: 首次访问用户会自动创建记录，包含默认值
 4. **头像选择**: 支持任意 Unicode 表情符号，但 UI 提供了 6 个预设选项
 
+## 教师中心 - LENS 理财功能
+
+### 功能概述
+教师可以将课程销售获得的 LENS 代币一键质押到 AAVE 协议进行理财，自动完成 LENS → WETH → USDT 的兑换并质押，获得生息凭证 aUSDT。
+
+### 理财流程
+
+#### 1. 自动化兑换链路
+```
+LENS (课程收益)
+  ↓ 通过 AMM 兑换
+WETH (包装 ETH)
+  ↓ 通过 AMM 兑换
+USDT (稳定币)
+  ↓ 质押到 AAVE
+aUSDT (生息凭证)
+```
+
+#### 2. 核心合约函数
+**Router.sol - `depositToAaveFromLENS`**
+```solidity
+function depositToAaveFromLENS(
+    uint256 amountIn,      // LENS 数量
+    uint256 minEthOut,     // WETH 最小输出（滑点保护）
+    uint256 minUsdtOut     // USDT 最小输出（滑点保护）
+) external {
+    // 1. 从用户拉取 LENS
+    LENS.transferFrom(msg.sender, address(this), amountIn);
+    
+    // 2. LENS → WETH
+    LENS.approve(address(amm), amountIn);
+    uint256 ethOut = amm.swapExactInput(address(LENS), address(WETH), amountIn, minEthOut);
+    
+    // 3. WETH → USDT
+    IERC20(WETH).approve(address(amm), ethOut);
+    uint256 usdtOut = amm.swapExactInput(address(WETH), address(USDT), ethOut, minUsdtOut);
+    
+    // 4. 质押到 AAVE
+    USDT.approve(address(aave), usdtOut);
+    aave.supply(usdtOut);
+    
+    // 5. 转 aUSDT 给用户
+    IERC20(aave.aUSDT()).transfer(msg.sender, usdtOut);
+}
+```
+
+### aUSDT 生息机制
+
+#### USDT vs aUSDT
+| 类型 | 是否生息 | 余额变化 | 赎回方式 |
+|------|---------|---------|---------|
+| USDT | ❌ 不生息 | 永远不变 | - |
+| aUSDT | ✅ 自动生息 | 随时间增长 | 随时赎回为 USDT |
+
+#### 利息计算原理
+- **AAVE 协议机制**: 借款人支付的利息 → 按比例分配给存款人
+- **aUSDT 汇率增长**: 
+  - 初始：1 aUSDT = 1 USDT
+  - 一年后（假设 5% APY）：1 aUSDT = 1.05 USDT
+- **余额自动增值**:
+  ```
+  存入 100 USDT → 获得 100 aUSDT
+  一年后余额自动变成 105 aUSDT（代表 105 USDT）
+  ```
+
+### 前端实现
+
+#### 页面路由
+- **理财中心**: `/teacher/finance`
+- **入口**: 教师首页新增"理财中心"按钮
+
+#### 核心功能
+1. **余额显示**: 实时查询 LENS 余额
+2. **金额输入**: 支持手动输入 + 一键最大
+3. **滑点设置**: 0.5% / 1% / 2% / 5% 可选
+4. **输出预估**: 根据 AMM 汇率估算最终 USDT 数量
+5. **一键质押**: 
+   - 授权 Router 使用 LENS
+   - 调用 `depositToAaveFromLENS`
+   - 用户确认两笔交易
+
+#### 交易流程
+```typescript
+// 1. 授权 LENS
+await publicClient.writeContract({
+  address: lensTokenAddress,
+  abi: LENS_ABI,
+  functionName: 'approve',
+  args: [routerAddress, amount],
+});
+
+// 2. 质押
+await publicClient.writeContract({
+  address: routerAddress,
+  abi: RouterArtifact.abi,
+  functionName: 'depositToAaveFromLENS',
+  args: [amount, minEthOut, minUsdtOut],
+});
+```
+
+### 本地测试 vs 真实网络
+
+#### 当前实现（本地测试）
+- **使用**: `depositToAaveFromLENS` → MockAavePool
+- **适用**: Hardhat 本地网络开发测试
+- **特点**: 不需要真实 AAVE 协议
+
+#### 真实网络部署
+- **使用**: `depositToAaveV3FromLENS` → 真实 Aave V3 Pool
+- **切换步骤**:
+  1. 合约设置真实 Pool 地址：
+     ```solidity
+     router.setPoolV3("0xAaveV3PoolAddress"); // Sepolia 真实地址
+     ```
+  2. 前端改调用函数：
+     ```typescript
+     functionName: 'depositToAaveV3FromLENS',
+     ```
+- **AAVE 地址**: https://aave.com/docs/resources/addresses
+
+### 平台费用机制
+
+#### CourseMarket 分账逻辑
+```solidity
+constructor(
+    address lens,
+    address owner_,
+    address feeRecipient_,  // 平台费接收地址
+    uint96 feeBps_          // 费率（基点）
+)
+
+// 购买课程时
+uint256 fee = (price * feeBps) / 10_000;      // 平台费
+uint256 authorAmount = price - fee;            // 教师实收
+
+LENS.transferFrom(msg.sender, author, authorAmount);      // 教师收益
+LENS.transferFrom(msg.sender, feeRecipient, fee);         // 平台费
+```
+
+#### 费率说明
+- **单位**: 基点（basis points）
+- **换算**: `feeBps / 100 = 百分比`
+- **示例**:
+  - 500 feeBps = 5%
+  - 1000 feeBps = 10%
+  - 100 feeBps = 1%
+
+#### 实际案例
+课程价格 11 LENS，feeBps = 500（5%）：
+```
+平台费 = (11 × 500) / 10000 = 0.55 LENS
+教师实收 = 11 - 0.55 = 10.45 LENS
+```
+
+**注意**: 如果 deployer 地址 = 平台费地址 = 教师地址（本地测试常见），教师会收到全额 11 LENS（两笔都到同一地址）。
+
+### 部署配置
+
+#### 本地开发
+```typescript
+// deploy.ts
+const [deployer, feeRecipient] = await ethers.getSigners();
+
+const market = await CourseMarket.deploy(
+  lensAddress,
+  deployer.address,       // 合约所有者
+  feeRecipient.address,   // 平台费地址（建议用不同账户）
+  500                     // 5% 平台费
+);
+```
+
+#### 账户说明
+- **deployer**: 部署合约的账户（Hardhat 测试账户）
+- **教师地址**: 前端连接的钱包地址（创建课程时的 msg.sender）
+- **平台费地址**: 接收平台费的地址（可与 deployer 不同）
+
+### 安全提示
+
+1. **滑点保护**: 设置合理的滑点容忍度，避免兑换损失过大
+2. **授权管理**: Router 预授权 AMM，减少用户交易次数
+3. **aUSDT 赎回**: 用户随时可以将 aUSDT 赎回为 USDT + 利息
+4. **操作不可逆**: 质押前请仔细确认金额
+
 ## 改进方向
 
 - [ ] 添加更多统计字段（学习时长、完成度等）
@@ -173,3 +356,6 @@ PORT=3001
 - [ ] 添加个人成就系统和自动更新逻辑
 - [ ] 实现用户排行榜功能
 - [ ] 添加个人资料完整度提示
+- [ ] 显示实时 AAVE APY 收益率
+- [ ] 添加 aUSDT 余额查询和赎回功能
+- [ ] 支持批量理财操作

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount, useSignMessage, usePublicClient } from 'wagmi';
+import { useCourseMarket } from '@/hooks/useCourseMarket';
 import type React from 'react';
+import { formatEther } from 'viem';
 
 interface TeacherProfile {
   name: string;
@@ -21,6 +23,8 @@ interface TeacherProfile {
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function TeacherProfilePage() {
+  const publicClient = usePublicClient();
+  const { COURSE_MARKET_ABI, courseMarketAddress, useLensBalance } = useCourseMarket();
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
@@ -35,7 +39,9 @@ export default function TeacherProfilePage() {
     bio: '',
     avatar: '👨‍🏫',
   });
-
+  const [courses, setCourses] = useState<any[]>();
+  const lensBalance = useLensBalance(address);
+  
   // 加载用户资料
   useEffect(() => {
     const loadProfile = async () => {
@@ -64,7 +70,18 @@ export default function TeacherProfilePage() {
       }
     };
 
+    const loadCourseData = async () => {
+      const coursesData = (await publicClient!.readContract({
+        address: courseMarketAddress,
+        abi: COURSE_MARKET_ABI,
+        functionName: 'getAuthorCourses',
+        args: [address],
+      })) as any[];
+      setCourses(coursesData);
+    }
+
     loadProfile();
+    loadCourseData();
   }, [address, isConnected]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -273,7 +290,7 @@ export default function TeacherProfilePage() {
                 <div className="relative">
                   <div className="text-4xl mb-3">📚</div>
                   <p className="text-gray-400 text-sm mb-2">已发布课程</p>
-                  <p className="text-3xl font-bold text-green-400">{profile?.totalCourses || 0}</p>
+                  <p className="text-3xl font-bold text-green-400">{courses?.length || 0}</p>
                 </div>
               </div>
               <div className="group bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:shadow-lg hover:shadow-yellow-500/20 p-6">
@@ -281,7 +298,7 @@ export default function TeacherProfilePage() {
                 <div className="relative">
                   <div className="text-4xl mb-3">💎</div>
                   <p className="text-gray-400 text-sm mb-2">总收益 (LENS)</p>
-                  <p className="text-3xl font-bold text-yellow-400">{(profile?.totalRevenue || 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-yellow-400">{lensBalance?.data ? formatEther(lensBalance?.data as bigint) : '0'}</p>
                 </div>
               </div>
             </div>
