@@ -79,6 +79,13 @@ export class SignedProfilePayload {
   signature!: `0x${string}`;
 
   @IsString()
-  @MaxLength(200)
   message!: string;
+
+  @IsString()
+  @IsOptional()
+  nonce?: string;
+
+  @IsNumber()
+  @IsOptional()
+  timestamp?: number;
 }

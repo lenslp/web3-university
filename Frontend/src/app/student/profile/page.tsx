@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { useSiweAuth } from '@/hooks/useSiweAuth';
 import type React from 'react';
 
 interface StudentProfile {
@@ -18,11 +19,17 @@ interface StudentProfile {
   achievements: string[];
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function StudentProfilePage() {
   const { address, isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
+  
+  // ⭐ 使用 SIWE 认证 Hook（与教师端相同）
+  const { 
+    authenticate, 
+    sessionToken,
+    isSessionValid,
+    error: authError 
+  } = useSiweAuth();
+  
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +54,8 @@ export default function StudentProfilePage() {
 
       try {
         setIsLoading(true);
-        const response = await fetch(`${BACKEND_URL}/profile?address=${address}`);
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${backendUrl}/profile?address=${address}`);
         if (!response.ok) throw new Error('Failed to load profile');
         const data = (await response.json()) as StudentProfile;
         setProfile(data);
@@ -87,32 +95,80 @@ export default function StudentProfilePage() {
       setError('');
       setSuccess('');
 
-      // 签名消息
-      const message = `Update profile for ${address}`;
-      const signature = await signMessageAsync({ account: address, message });
+      let saveSuccess = false;
+      let updatedProfile: StudentProfile | null = null;
 
-      // 上传更新到后端
-      const response = await fetch(`${BACKEND_URL}/profile`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          message,
-          signature,
-          profile: formData,
-        }),
-      });
+      // 如果会话有效，直接使用 token 保存
+      if (isSessionValid && sessionToken) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`,
+          },
+          body: JSON.stringify({ address, profile: formData }),
+        });
 
-      if (!response.ok) throw new Error('Failed to update profile');
-      const updated = (await response.json()) as StudentProfile;
-      setProfile(updated);
-      setIsEditing(false);
-      setSuccess('Profile updated successfully!');
-      setTimeout(() => setSuccess(''), 3000);
+        // 401 表示会话过期，静默重新认证并保存
+        if (response.status === 401) {
+          updatedProfile = await authenticateAndSave();
+          saveSuccess = !!updatedProfile;
+        } else if (response.ok) {
+          updatedProfile = await response.json();
+          saveSuccess = true;
+        } else {
+          // 其他错误（非会话过期）
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error((errorData as any).message || 'Failed to save profile');
+        }
+      } else {
+        // 没有会话，需要先认证
+        updatedProfile = await authenticateAndSave();
+        saveSuccess = !!updatedProfile;
+      }
+
+      if (saveSuccess && updatedProfile) {
+        setProfile(updatedProfile);
+        setIsEditing(false);
+        setSuccess('✅ Profile updated successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        throw new Error('Failed to save profile');
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // 发起认证并保存资料
+  const authenticateAndSave = async (): Promise<StudentProfile | null> => {
+    if (!address) throw new Error('Missing address');
+
+    try {
+      // 发起 SIWE 认证（获取新 token）
+      const { token: newToken } = await authenticate(address);
+
+      // 使用新 token 直接发送请求，不依赖状态更新
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${newToken}`,
+        },
+        body: JSON.stringify({ address, profile: formData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error((errorData as any).message || 'Failed to save profile');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      throw err;
     }
   };
 
