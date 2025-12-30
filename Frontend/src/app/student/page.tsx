@@ -14,27 +14,27 @@ export default function StudentHome() {
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
             探索丰富的 Web3 课程，购买您感兴趣的内容，并通过学习获得更多收益
           </p>
-          
+
           <div className="flex gap-4 justify-center pt-4 flex-wrap">
-            <Link 
+            <Link
               href="/student/buy-lens"
               className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-3 rounded-lg text-lg hover:from-amber-600 hover:to-amber-700 transition-all font-semibold inline-block"
             >
               购买 LENS
             </Link>
-            <Link 
+            <Link
               href="/student/courses"
               className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-lg text-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold inline-block"
             >
               浏览课程
             </Link>
-            <Link 
+            <Link
               href="/student/profile"
               className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-3 rounded-lg text-lg hover:from-purple-600 hover:to-purple-700 transition-all font-semibold inline-block"
             >
               个人中心
             </Link>
-            <Link 
+            <Link
               href="/student/earnings"
               className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg text-lg hover:from-green-600 hover:to-green-700 transition-all font-semibold inline-block"
             >
@@ -55,26 +55,22 @@ export default function StudentHome() {
               </p>
             </div>
           </div>
-          
+
           <div className="group bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:shadow-lg hover:shadow-green-500/20 p-6">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
             <div className="relative">
               <div className="text-4xl mb-3">💰</div>
               <p className="text-gray-400 text-sm mb-2">代币支付</p>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                使用 LENS Token 购买课程
-              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">使用 LENS Token 购买课程</p>
             </div>
           </div>
-          
+
           <div className="group bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:shadow-lg hover:shadow-yellow-500/20 p-6">
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
             <div className="relative">
               <div className="text-4xl mb-3">📈</div>
               <p className="text-gray-400 text-sm mb-2">被动收益</p>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                存入 Aave 获得利息收入
-              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">存入 Aave 获得利息收入</p>
             </div>
           </div>
 
@@ -83,9 +79,7 @@ export default function StudentHome() {
             <div className="relative">
               <div className="text-4xl mb-3">🎓</div>
               <p className="text-gray-400 text-sm mb-2">专业讲师</p>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                业界专家与顶级开发者
-              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">业界专家与顶级开发者</p>
             </div>
           </div>
         </div>

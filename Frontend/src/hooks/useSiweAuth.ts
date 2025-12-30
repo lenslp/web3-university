@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useSignMessage, usePublicClient } from 'wagmi';
+import { useCallback, useEffect, useState } from 'react';
 import { SiweMessage } from 'siwe';
+import { usePublicClient, useSignMessage } from 'wagmi';
 
 interface SessionData {
   token: string;
@@ -20,14 +20,14 @@ interface UseSiweAuthReturn {
   // 工具方法
   isLoading: boolean;
   error: string | null;
-  
+
   // 认证方法（完整流程：获取 nonce → 签名 → 验证 → 获取 token）
   authenticate: (address: string) => Promise<{ token: string; expiresIn: number }>;
 }
 
 /**
  * SIWE (Sign-In with Ethereum) 认证 Hook
- * 
+ *
  * 功能：
  * - 管理会话令牌（localStorage 持久化）
  * - 提供 SIWE 标准签名认证
@@ -51,10 +51,13 @@ export function useSiweAuth(options: UseSiweAuthOptions = {}): UseSiweAuthReturn
   const isSessionValid = sessionToken !== null;
 
   // 保存会话到 localStorage 和 state
-  const saveSession = useCallback((token: string) => {
-    setSessionToken(token);
-    localStorage.setItem(sessionKey, JSON.stringify({ token }));
-  }, [sessionKey]);
+  const saveSession = useCallback(
+    (token: string) => {
+      setSessionToken(token);
+      localStorage.setItem(sessionKey, JSON.stringify({ token }));
+    },
+    [sessionKey]
+  );
 
   // 清除会话
   const clearSession = useCallback(() => {

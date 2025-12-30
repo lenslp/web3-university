@@ -1,5 +1,5 @@
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseEther } from 'viem';
+import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 const ROUTER_ABI = [
   {
@@ -24,7 +24,10 @@ const ROUTER_ABI = [
 
 const LENS_TOKEN_ABI = [
   {
-    inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }],
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
     name: 'approve',
     outputs: [{ name: '', type: 'bool' }],
     stateMutability: 'nonpayable',
@@ -43,16 +46,18 @@ export function useDefi() {
     hash: swapHash,
   });
 
-  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({
-    hash: approveHash,
-  });
+  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt(
+    {
+      hash: approveHash,
+    }
+  );
 
   // 授权 Router 使用 LENS
   const approveRouter = async (amount: string) => {
     if (!lensTokenAddress || !routerAddress) {
       throw new Error('Contract addresses not configured');
     }
-    
+
     writeLensContract({
       address: lensTokenAddress,
       abi: LENS_TOKEN_ABI,
@@ -68,7 +73,7 @@ export function useDefi() {
     }
 
     const amountInWei = parseEther(amountIn);
-    const minOut = amountInWei * BigInt(95) / BigInt(100); // 5% 滑点保护
+    const minOut = (amountInWei * BigInt(95)) / BigInt(100); // 5% 滑点保护
 
     writeRouterContract({
       address: routerAddress,

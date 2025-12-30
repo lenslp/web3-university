@@ -109,9 +109,7 @@ export function NavHeader() {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={
-                    itemBase + ' ' + (active ? darkActive : darkIdle)
-                  }
+                  className={itemBase + ' ' + (active ? darkActive : darkIdle)}
                 >
                   <span className="whitespace-nowrap">{item.label}</span>
                 </Link>

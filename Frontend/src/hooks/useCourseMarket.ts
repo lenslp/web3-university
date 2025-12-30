@@ -1,5 +1,10 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useWalletClient } from 'wagmi';
-import { parseEther, encodeFunctionData } from 'viem';
+import { encodeFunctionData, parseEther } from 'viem';
+import {
+  useReadContract,
+  useWaitForTransactionReceipt,
+  useWalletClient,
+  useWriteContract,
+} from 'wagmi';
 import CourseMarketArtifact from '@/contracts/CourseMarket.json';
 import LENSArtifact from '@/contracts/LENS.json';
 import AMMArtifact from '@/contracts/SimpleAMM.json';
@@ -18,9 +23,21 @@ export function useCourseMarket() {
   const routerAddress = process.env.NEXT_PUBLIC_ROUTER_ADDRESS as `0x${string}`;
   const { data: walletClient } = useWalletClient();
 
-  const { writeContract: writeCourseContract, writeContractAsync: writeCourseContractAsync, data: courseHash } = useWriteContract();
-  const { writeContract: writeLensContract, writeContractAsync: writeLensContractAsync, data: approveHash } = useWriteContract();
-  const { writeContract: writeAmmContract, writeContractAsync: writeAmmContractAsync, data: swapHash } = useWriteContract();
+  const {
+    writeContract: writeCourseContract,
+    writeContractAsync: writeCourseContractAsync,
+    data: courseHash,
+  } = useWriteContract();
+  const {
+    writeContract: writeLensContract,
+    writeContractAsync: writeLensContractAsync,
+    data: approveHash,
+  } = useWriteContract();
+  const {
+    writeContract: writeAmmContract,
+    writeContractAsync: writeAmmContractAsync,
+    data: swapHash,
+  } = useWriteContract();
   const { writeContract: writeUpdateContract, data: updateHash } = useWriteContract();
   const { writeContract: writeDeleteContract, data: deleteHash } = useWriteContract();
 
@@ -32,9 +49,11 @@ export function useCourseMarket() {
     hash: courseHash,
   });
 
-  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({
-    hash: approveHash,
-  });
+  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt(
+    {
+      hash: approveHash,
+    }
+  );
 
   // 等待编辑交易确认
   const { isLoading: isUpdateLoading, isSuccess: isUpdateSuccess } = useWaitForTransactionReceipt({

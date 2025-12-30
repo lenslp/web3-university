@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
-import { useState, useEffect } from 'react';
+import { useToast } from '../../../components/ToastProvider';
 import { useCourseMarket } from '../../../hooks/useCourseMarket';
 import { useDefi } from '../../../hooks/useDefi';
-import { formatEther } from 'viem';
-import { useToast } from '../../../components/ToastProvider';
 
 export default function StudentEarningsPage() {
   const { address, isConnected } = useAccount();
@@ -14,16 +14,16 @@ export default function StudentEarningsPage() {
   const [step, setStep] = useState<'idle' | 'approving' | 'swapping'>('idle');
   const [useAave, setUseAave] = useState(true);
   const { showToast } = useToast();
-  
+
   const { useLensBalance } = useCourseMarket();
-  const { 
-    approveRouter, 
-    swapAndDeposit, 
+  const {
+    approveRouter,
+    swapAndDeposit,
     useATokenBalance,
     isSwapLoading,
     isSwapSuccess,
     isApproveLoading,
-    isApproveSuccess
+    isApproveSuccess,
   } = useDefi();
 
   const { data: lensBalance } = useLensBalance(address);
@@ -41,10 +41,7 @@ export default function StudentEarningsPage() {
   // 监听兑换成功
   useEffect(() => {
     if (isSwapSuccess && step === 'swapping') {
-      showToast(
-        useAave ? '兑换成功并已存入 Aave！🎉' : '兑换 USDT 成功！',
-        'success'
-      );
+      showToast(useAave ? '兑换成功并已存入 Aave！🎉' : '兑换 USDT 成功！', 'success');
       setSwapAmount('');
       setStep('idle');
     }
@@ -55,12 +52,12 @@ export default function StudentEarningsPage() {
       showToast('请先连接钱包', 'error');
       return;
     }
-    
+
     if (!swapAmount || parseFloat(swapAmount) <= 0) {
       showToast('请输入有效的兑换数量', 'error');
       return;
     }
-    
+
     setStep('approving');
     try {
       showToast('正在授权 Router 使用 LENS...', 'loading');
@@ -84,16 +81,14 @@ export default function StudentEarningsPage() {
 
         {!isConnected ? (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-8">
-            <p className="text-yellow-400 text-center font-medium">
-              请先连接钱包查看收益
-            </p>
+            <p className="text-yellow-400 text-center font-medium">请先连接钱包查看收益</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {/* 余额卡片 */}
             <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6 space-y-4">
               <h3 className="text-xl font-bold text-white mb-4">资产概览</h3>
-              
+
               <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-4">
                 <p className="text-sm text-gray-400 mb-1">LENS Token</p>
                 <p className="text-3xl font-bold text-blue-400">
@@ -106,21 +101,17 @@ export default function StudentEarningsPage() {
                 <p className="text-3xl font-bold text-green-400">
                   {aTokenBalance !== undefined ? formatEther(aTokenBalance) : '0'} aUSDT
                 </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  持续产生利息收益
-                </p>
+                <p className="text-xs text-gray-500 mt-2">持续产生利息收益</p>
               </div>
             </div>
 
             {/* Swap 操作卡片 */}
             <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6">
               <h3 className="text-xl font-bold text-white mb-4">兑换并存入</h3>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    LENS 数量
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">LENS 数量</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -180,10 +171,10 @@ export default function StudentEarningsPage() {
                   {step === 'approving'
                     ? '授权中...'
                     : step === 'swapping'
-                    ? '兑换中...'
-                    : useAave
-                    ? '兑换并存入 Aave'
-                    : '仅兑换为 USDT'}
+                      ? '兑换中...'
+                      : useAave
+                        ? '兑换并存入 Aave'
+                        : '仅兑换为 USDT'}
                 </button>
               </div>
             </div>
@@ -194,10 +185,22 @@ export default function StudentEarningsPage() {
         <div className="bg-white/5 backdrop-blur-lg border border-blue-500/30 rounded-2xl p-6">
           <h3 className="text-lg font-bold text-white mb-3">💡 工作原理</h3>
           <div className="space-y-2 text-sm text-gray-300">
-            <p><strong className="text-blue-400">1. 购买课程</strong>：使用 LENS Token 购买课程，LENS 会转入课程市场合约</p>
-            <p><strong className="text-green-400">2. 兑换收益</strong>：通过 AMM 将 LENS 兑换为 WETH，再兑换为 USDT</p>
-            <p><strong className="text-yellow-400">3. Aave 存款</strong>：USDT 自动存入 Aave，获得 aUSDT 凭证并持续获取利息</p>
-            <p><strong className="text-purple-400">4. 随时提取</strong>：aUSDT 可随时从 Aave 提取回 USDT</p>
+            <p>
+              <strong className="text-blue-400">1. 购买课程</strong>：使用 LENS Token 购买课程，LENS
+              会转入课程市场合约
+            </p>
+            <p>
+              <strong className="text-green-400">2. 兑换收益</strong>：通过 AMM 将 LENS 兑换为
+              WETH，再兑换为 USDT
+            </p>
+            <p>
+              <strong className="text-yellow-400">3. Aave 存款</strong>：USDT 自动存入 Aave，获得
+              aUSDT 凭证并持续获取利息
+            </p>
+            <p>
+              <strong className="text-purple-400">4. 随时提取</strong>：aUSDT 可随时从 Aave 提取回
+              USDT
+            </p>
           </div>
         </div>
       </main>

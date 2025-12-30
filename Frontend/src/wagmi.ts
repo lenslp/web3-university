@@ -1,10 +1,6 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import {
-  mainnet,
-  sepolia,
-  hardhat,
-} from 'wagmi/chains';
 import { http } from 'viem';
+import { hardhat, mainnet, sepolia } from 'wagmi/chains';
 
 // WalletConnect Project ID
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '';
@@ -21,11 +17,7 @@ const localhostChain = {
 export const config = getDefaultConfig({
   appName: 'Web3 University',
   projectId,
-  chains: [
-    mainnet,
-    sepolia,
-    localhostChain,
-  ],
+  chains: [mainnet, sepolia, localhostChain],
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http('https://eth-sepolia.g.alchemy.com/v2/lplRmAzepDPWBXNH6z7JF'),

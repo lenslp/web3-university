@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
 import type React from 'react';
-import { useCourseMarket } from '@/hooks/useCourseMarket';
+import { useEffect, useState } from 'react';
 import { formatEther } from 'viem';
+import { useAccount, usePublicClient } from 'wagmi';
+import { useCourseMarket } from '@/hooks/useCourseMarket';
 
 interface StudentCourse {
   id: bigint;
@@ -21,7 +21,17 @@ interface StudentCourse {
 export default function StudentCoursesPage() {
   const { address } = useAccount();
   const publicClient = usePublicClient();
-  const { buyCourse, approveLens, COURSE_MARKET_ABI, LENS_TOKEN_ABI, lensTokenAddress, courseMarketAddress, useLensBalance, isCourseSuccess, isCourseLoading } = useCourseMarket();
+  const {
+    buyCourse,
+    approveLens,
+    COURSE_MARKET_ABI,
+    LENS_TOKEN_ABI,
+    lensTokenAddress,
+    courseMarketAddress,
+    useLensBalance,
+    isCourseSuccess,
+    isCourseLoading,
+  } = useCourseMarket();
 
   const [mounted, setMounted] = useState(false);
   const lensBalance = useLensBalance(address);
@@ -50,7 +60,7 @@ export default function StudentCoursesPage() {
   // 加载所有课程
   const loadAllCourses = async () => {
     if (!address || !publicClient || !courseMarketAddress) return;
-    
+
     setIsLoading(true);
     const allCourses: StudentCourse[] = [];
 
@@ -69,7 +79,7 @@ export default function StudentCoursesPage() {
       //   fromBlock: 'earliest',
       //   toBlock: 'latest',
       // });
-      
+
       // // 统计每门课程的购买次数和当前用户是否购买过
       // const soldCountMap = new Map<string, number>();
       // const userPurchasedSet = new Set<string>();
@@ -77,7 +87,7 @@ export default function StudentCoursesPage() {
       //   const { courseId, student } = purchaseLog.args as { courseId: bigint; student: string };
       //   const key = courseId.toString();
       //   soldCountMap.set(key, (soldCountMap.get(key) || 0) + 1);
-        
+
       //   if (student?.toLowerCase() === address.toLowerCase()) {
       //     userPurchasedSet.add(key);
       //   }
@@ -107,12 +117,12 @@ export default function StudentCoursesPage() {
           }
 
           // 合约查询用户是否已购，优先于日志判断
-          const hasAccess = await publicClient.readContract({
+          const hasAccess = (await publicClient.readContract({
             address: courseMarketAddress,
             abi: COURSE_MARKET_ABI,
             functionName: 'hasAccess',
             args: [id, address],
-          }) as boolean;
+          })) as boolean;
 
           allCourses.push({
             id,
@@ -150,18 +160,19 @@ export default function StudentCoursesPage() {
   }, [address, mounted, publicClient]);
 
   // 过滤课程
-  const filteredCourses = courses.filter(course => {
+  const filteredCourses = courses.filter((course) => {
     // 搜索过滤
-    const matchesSearch = course.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+    const matchesSearch =
+      course.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
       course.description.toLowerCase().includes(searchKeyword.toLowerCase());
-    
+
     // 购买状态过滤
     if (selectedFilter === 'purchased') {
       return matchesSearch && course.isPurchased;
     } else if (selectedFilter === 'unpurchased') {
       return matchesSearch && !course.isPurchased;
     }
-    
+
     return matchesSearch;
   });
 
@@ -174,12 +185,12 @@ export default function StudentCoursesPage() {
     setApprovingCourseId(course.id);
     try {
       // 0) 购买前拦截：如果已购则阻止重复购买
-      const alreadyPurchased = await publicClient.readContract({
+      const alreadyPurchased = (await publicClient.readContract({
         address: courseMarketAddress,
         abi: COURSE_MARKET_ABI,
         functionName: 'hasAccess',
         args: [course.id, address],
-      }) as boolean;
+      })) as boolean;
       if (alreadyPurchased) {
         setApprovingCourseId(null);
         alert('您已购买该课程，无需重复购买');
@@ -263,8 +274,18 @@ export default function StudentCoursesPage() {
           {/* 搜索框 */}
           <div className="relative max-w-2xl mx-auto">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -280,7 +301,12 @@ export default function StudentCoursesPage() {
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
@@ -343,8 +369,12 @@ export default function StudentCoursesPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-purple-500/20 mx-auto mb-4">
               <span className="text-4xl">{courses.length === 0 ? '📖' : '🔍'}</span>
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-white">{courses.length === 0 ? '暂无课程' : '未找到匹配的课程'}</h3>
-            <p className="text-gray-400">{courses.length === 0 ? '敬请期待更多课程上线' : '试试其他搜索关键词'}</p>
+            <h3 className="text-2xl font-bold mb-2 text-white">
+              {courses.length === 0 ? '暂无课程' : '未找到匹配的课程'}
+            </h3>
+            <p className="text-gray-400">
+              {courses.length === 0 ? '敬请期待更多课程上线' : '试试其他搜索关键词'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -355,12 +385,14 @@ export default function StudentCoursesPage() {
               >
                 {/* 装饰性渐变背景 */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 <div className="relative p-6 flex flex-col h-full">
                   {/* 头部：标题和购买状态 */}
                   <div className="mb-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
-                      <h3 className="text-lg font-bold text-white leading-snug flex-1 line-clamp-2">{course.title}</h3>
+                      <h3 className="text-lg font-bold text-white leading-snug flex-1 line-clamp-2">
+                        {course.title}
+                      </h3>
                       {course.isPurchased && (
                         <div className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-green-500/20 border border-green-500/50 backdrop-blur-md">
                           <span className="text-lg">✓</span>
@@ -377,17 +409,24 @@ export default function StudentCoursesPage() {
                       <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                         <div>
                           <p className="text-xs text-gray-500 mb-1">价格</p>
-                          <p className="text-sm font-semibold text-blue-400">{formatEther(course.price)} LENS</p>
+                          <p className="text-sm font-semibold text-blue-400">
+                            {formatEther(course.price)} LENS
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                         <div>
                           <p className="text-xs text-gray-500 mb-1">时长</p>
-                          <p className="text-sm font-semibold text-purple-400">{course.duration || '未设置'}</p>
+                          <p className="text-sm font-semibold text-purple-400">
+                            {course.duration || '未设置'}
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-gray-500 mb-1">讲师</p>
-                          <p className="text-xs font-semibold text-gray-300 truncate" title={course.author}>
+                          <p
+                            className="text-xs font-semibold text-gray-300 truncate"
+                            title={course.author}
+                          >
                             {course.author.slice(0, 6)}...{course.author.slice(-4)}
                           </p>
                         </div>
@@ -406,10 +445,18 @@ export default function StudentCoursesPage() {
                   ) : (
                     <button
                       onClick={() => handleApproveThenBuy(course)}
-                      disabled={approvingCourseId === course.id || buyingCourseId === course.id || isCourseLoading}
+                      disabled={
+                        approvingCourseId === course.id ||
+                        buyingCourseId === course.id ||
+                        isCourseLoading
+                      }
                       className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-200 font-semibold"
                     >
-                      {approvingCourseId === course.id ? '授权中...' : buyingCourseId === course.id ? '购买中...' : '购买课程'}
+                      {approvingCourseId === course.id
+                        ? '授权中...'
+                        : buyingCourseId === course.id
+                          ? '购买中...'
+                          : '购买课程'}
                     </button>
                   )}
                 </div>
@@ -426,7 +473,12 @@ export default function StudentCoursesPage() {
               <div>
                 <h3 className="text-lg font-bold text-yellow-400 mb-3">购买前须知</h3>
                 <ul className="text-sm text-gray-300 space-y-2">
-                  <li>• 您的 LENS 余额: <span className="font-semibold text-white">{lensBalance.data ? formatEther(lensBalance.data as bigint) : '0'} LENS</span></li>
+                  <li>
+                    • 您的 LENS 余额:{' '}
+                    <span className="font-semibold text-white">
+                      {lensBalance.data ? formatEther(lensBalance.data as bigint) : '0'} LENS
+                    </span>
+                  </li>
                   <li>• 购买课程需要授权 LENS Token，请确保钱包中有足够余额</li>
                   <li>• 购买后可以永久访问课程内容</li>
                 </ul>

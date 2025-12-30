@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function TeacherHome() {
   return (
@@ -14,26 +14,26 @@ export default function TeacherHome() {
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
             创建和管理您的课程，获得课程销售收益
           </p>
-          
+
           <div className="flex gap-4 justify-center pt-4">
-              <Link 
-                href="/teacher/courses"
-                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg text-lg hover:from-green-600 hover:to-green-700 transition-all font-semibold inline-block"
-              >
-                创建课程
-              </Link>
-              <Link 
-                href="/teacher/profile"
-                className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-3 rounded-lg text-lg hover:from-purple-600 hover:to-purple-700 transition-all font-semibold inline-block"
-              >
-                个人中心
-              </Link>
-              <Link 
-                href="/teacher/finance"
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-3 rounded-lg text-lg hover:from-yellow-600 hover:to-orange-600 transition-all font-semibold inline-block"
-              >
-                理财中心
-              </Link>
+            <Link
+              href="/teacher/courses"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg text-lg hover:from-green-600 hover:to-green-700 transition-all font-semibold inline-block"
+            >
+              创建课程
+            </Link>
+            <Link
+              href="/teacher/profile"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-3 rounded-lg text-lg hover:from-purple-600 hover:to-purple-700 transition-all font-semibold inline-block"
+            >
+              个人中心
+            </Link>
+            <Link
+              href="/teacher/finance"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-3 rounded-lg text-lg hover:from-yellow-600 hover:to-orange-600 transition-all font-semibold inline-block"
+            >
+              理财中心
+            </Link>
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function TeacherHome() {
               </p>
             </div>
           </div>
-          
+
           <div className="group bg-white/5 backdrop-blur-lg rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all hover:shadow-lg hover:shadow-orange-500/20">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative p-6">

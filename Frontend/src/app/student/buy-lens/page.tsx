@@ -1,15 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
-import { formatEther, parseEther } from 'viem';
 import type React from 'react';
+import { useEffect, useState } from 'react';
+import { formatEther, parseEther } from 'viem';
+import { useAccount, usePublicClient } from 'wagmi';
 import { useCourseMarket } from '@/hooks/useCourseMarket';
 
 export default function BuyLensPage() {
   const { address } = useAccount();
   const publicClient = usePublicClient();
-  const { swapEthForLens, ammAddress, lensTokenAddress, wethAddress, AMM_ABI, useLensBalance, isSwapSuccess } = useCourseMarket();
+  const {
+    swapEthForLens,
+    ammAddress,
+    lensTokenAddress,
+    wethAddress,
+    AMM_ABI,
+    useLensBalance,
+    isSwapSuccess,
+  } = useCourseMarket();
 
   const [mounted, setMounted] = useState(false);
   const [ethAmount, setEthAmount] = useState('');
@@ -37,7 +45,14 @@ export default function BuyLensPage() {
 
   // 估算输出（使用 WETH 地址）
   const estimateSwap = async (ethValue: string) => {
-    if (!ethValue || parseFloat(ethValue) <= 0 || !publicClient || !ammAddress || !lensTokenAddress || !wethAddress) {
+    if (
+      !ethValue ||
+      parseFloat(ethValue) <= 0 ||
+      !publicClient ||
+      !ammAddress ||
+      !lensTokenAddress ||
+      !wethAddress
+    ) {
       setEstimatedLens('0');
       return;
     }
@@ -45,17 +60,17 @@ export default function BuyLensPage() {
     try {
       setLoading(true);
       const amountIn = parseEther(ethValue);
-      
-      const amountOut = await publicClient.readContract({
+
+      const amountOut = (await publicClient.readContract({
         address: ammAddress,
         abi: AMM_ABI,
         functionName: 'getAmountOut',
         args: [
           wethAddress, // 使用 WETH 地址而不是 address(0)
           lensTokenAddress,
-          amountIn
+          amountIn,
         ],
-      }) as bigint;
+      })) as bigint;
 
       setEstimatedLens(formatEther(amountOut));
     } catch (e) {
@@ -89,13 +104,13 @@ export default function BuyLensPage() {
 
     try {
       const minLens = (parseFloat(estimatedLens) * (1 - parseFloat(slippage) / 100)).toString();
-      
+
       console.log('Starting swap with 3 steps...');
       setCurrentStep(1); // 包装 ETH
-      
+
       // 执行三步交换流程
       await swapEthForLens(ethAmount, minLens);
-      
+
       console.log('Swap completed successfully!');
     } catch (e: any) {
       console.error('Swap error:', e);
@@ -158,8 +173,18 @@ export default function BuyLensPage() {
                   {/* 兑换箭头 */}
                   <div className="flex justify-center">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m0 0l4 4m10-4v12m0 0l4-4m0 0l-4-4" />
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 16V4m0 0L3 8m0 0l4 4m10-4v12m0 0l4-4m0 0l-4-4"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -213,15 +238,13 @@ export default function BuyLensPage() {
                   >
                     {isSwapping ? '交换中...' : '立即兑换'}
                   </button>
-                  
+
                   {/* 交换中提示 */}
                   {isSwapping && (
                     <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                       <div className="flex items-center gap-3">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
-                        <p className="text-sm text-blue-300">
-                          正在处理交易，请在钱包中确认...
-                        </p>
+                        <p className="text-sm text-blue-300">正在处理交易，请在钱包中确认...</p>
                       </div>
                     </div>
                   )}

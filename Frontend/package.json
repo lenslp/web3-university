@@ -7,11 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "2.2.10",
     "@tanstack/react-query": "^5.55.3",
+    "@welldone-software/why-did-you-render": "^10.0.1",
     "next": "15.1.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -20,13 +23,12 @@
     "wagmi": "2.19.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.10",
     "@soda/friendly-errors-webpack-plugin": "^1.8.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

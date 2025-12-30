@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAccount, usePublicClient, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useEffect, useState } from 'react';
 import { formatEther, parseEther } from 'viem';
-import { useCourseMarket } from '@/hooks/useCourseMarket';
+import { useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import RouterArtifact from '@/contracts/Router.json';
+import { useCourseMarket } from "@/hooks/useCourseMarket";
 
 export default function TeacherFinancePage() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
   const { useLensBalance, lensTokenAddress } = useCourseMarket();
-  const lensBalance = useLensBalance(address);
-  
+  const lensBalance = useLensBalance(address)
+
   const routerAddress = process.env.NEXT_PUBLIC_ROUTER_ADDRESS as `0x${string}`;
   const backendUrl = process.env.NEXT_PUBLIC_API_URL as string | undefined;
-  const usdtTokenAddress = (process.env.NEXT_PUBLIC_USDT_ADDRESS || '0xdAC17F958D2ee523a2206206994597C13D831ec7') as `0x${string}`;
+  const usdtTokenAddress = (process.env.NEXT_PUBLIC_USDT_ADDRESS ||
+    '0xdAC17F958D2ee523a2206206994597C13D831ec7') as `0x${string}`;
   const [mounted, setMounted] = useState(false);
   const [lensAmount, setLensAmount] = useState('');
   const [estimatedUsdt, setEstimatedUsdt] = useState('0');
@@ -31,7 +32,7 @@ export default function TeacherFinancePage() {
   // 估算输出（简化版，实际应调用 AMM getAmountOut）
   const estimateOutput = async () => {
     if (!lensAmount || !publicClient) return;
-    
+
     try {
       // 这里简化处理，实际应该调用 AMM 的 getAmountOut 多次计算
       // LENS -> WETH -> USDT 的链式兑换
@@ -70,13 +71,13 @@ export default function TeacherFinancePage() {
           {
             inputs: [
               { name: 'spender', type: 'address' },
-              { name: 'amount', type: 'uint256' }
+              { name: 'amount', type: 'uint256' },
             ],
             name: 'approve',
             outputs: [{ name: '', type: 'bool' }],
             stateMutability: 'nonpayable',
-            type: 'function'
-          }
+            type: 'function',
+          },
         ],
         functionName: 'approve',
         args: [routerAddress, amount],
@@ -201,7 +202,7 @@ export default function TeacherFinancePage() {
           {/* 理财表单 */}
           <div className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-8">
             <h2 className="text-2xl font-bold text-white mb-6">一键理财</h2>
-            
+
             {/* 流程说明 */}
             <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <div className="flex items-start gap-3">

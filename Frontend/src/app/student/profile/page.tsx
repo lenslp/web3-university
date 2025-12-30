@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useSiweAuth } from '@/hooks/useSiweAuth';
-import type React from 'react';
 
 interface StudentProfile {
   name: string;
@@ -21,15 +21,10 @@ interface StudentProfile {
 
 export default function StudentProfilePage() {
   const { address, isConnected } = useAccount();
-  
+
   // ⭐ 使用 SIWE 认证 Hook（与教师端相同）
-  const { 
-    authenticate, 
-    sessionToken,
-    isSessionValid,
-    error: authError 
-  } = useSiweAuth();
-  
+  const { authenticate, sessionToken, isSessionValid, error: authError } = useSiweAuth();
+
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,14 +95,17 @@ export default function StudentProfilePage() {
 
       // 如果会话有效，直接使用 token 保存
       if (isSessionValid && sessionToken) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`,
-          },
-          body: JSON.stringify({ address, profile: formData }),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${sessionToken}`,
+            },
+            body: JSON.stringify({ address, profile: formData }),
+          }
+        );
 
         // 401 表示会话过期，静默重新认证并保存
         if (response.status === 401) {
@@ -151,14 +149,17 @@ export default function StudentProfilePage() {
       const { token: newToken } = await authenticate(address);
 
       // 使用新 token 直接发送请求，不依赖状态更新
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${newToken}`,
-        },
-        body: JSON.stringify({ address, profile: formData }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newToken}`,
+          },
+          body: JSON.stringify({ address, profile: formData }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -203,7 +204,7 @@ export default function StudentProfilePage() {
             {error}
           </div>
         )}
-        
+
         {/* 成功提示 */}
         {success && (
           <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-200">
@@ -225,9 +226,15 @@ export default function StudentProfilePage() {
               {/* 基本信息 */}
               {!isEditing ? (
                 <>
-                  <h2 className="text-2xl font-bold text-white text-center mb-2">{profile?.name || 'Unknown'}</h2>
-                  <p className="text-gray-400 text-center text-sm mb-4">{profile?.email || 'No email'}</p>
-                  <p className="text-gray-400 text-center text-sm mb-6 line-clamp-3">{profile?.bio || 'No bio'}</p>
+                  <h2 className="text-2xl font-bold text-white text-center mb-2">
+                    {profile?.name || 'Unknown'}
+                  </h2>
+                  <p className="text-gray-400 text-center text-sm mb-4">
+                    {profile?.email || 'No email'}
+                  </p>
+                  <p className="text-gray-400 text-center text-sm mb-6 line-clamp-3">
+                    {profile?.bio || 'No bio'}
+                  </p>
                   <button
                     onClick={() => setIsEditing(true)}
                     className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all font-semibold border border-white/20"
@@ -310,18 +317,22 @@ export default function StudentProfilePage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">钱包地址</p>
-                  <p className="text-sm font-mono text-blue-400 break-all">{profile?.walletAddress || address}</p>
+                  <p className="text-sm font-mono text-blue-400 break-all">
+                    {profile?.walletAddress || address}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">加入日期</p>
-                  <p className="text-sm text-gray-300">{profile?.joinDate || new Date().toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-300">
+                    {profile?.joinDate || new Date().toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* 右侧：统计和成就 */}
-          
+
           <div className="lg:col-span-2 space-y-8">
             {/* 统计数据 */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -348,7 +359,9 @@ export default function StudentProfilePage() {
                 <div className="relative">
                   <div className="text-4xl mb-3">💰</div>
                   <p className="text-gray-400 text-sm mb-2">总支出 (LENS)</p>
-                  <p className="text-3xl font-bold text-yellow-400">{(profile?.totalSpent || 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-yellow-400">
+                    {(profile?.totalSpent || 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
 
@@ -371,7 +384,10 @@ export default function StudentProfilePage() {
               <div className="space-y-2">
                 {(profile?.achievements || []).length > 0 ? (
                   (profile?.achievements || []).map((achievement, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 transition-all">
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 transition-all"
+                    >
                       <span className="text-xl">🏅</span>
                       <span className="text-gray-300">{achievement}</span>
                     </div>
@@ -382,7 +398,6 @@ export default function StudentProfilePage() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

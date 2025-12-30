@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useId, useState } from 'react';
+import { formatEther } from 'viem';
 import { useAccount, usePublicClient } from 'wagmi';
 import { useCourseMarket } from '@/hooks/useCourseMarket';
 import { useSiweAuth } from '@/hooks/useSiweAuth';
-import type React from 'react';
-import { formatEther } from 'viem';
 
 interface TeacherProfile {
   name: string;
@@ -25,15 +25,10 @@ export default function TeacherProfilePage() {
   const publicClient = usePublicClient();
   const { COURSE_MARKET_ABI, courseMarketAddress, useLensBalance } = useCourseMarket();
   const { address, isConnected } = useAccount();
-  
+
   // ⭐ 使用 SIWE 认证 Hook
-  const { 
-    authenticate, 
-    sessionToken,
-    isSessionValid,
-    error: authError 
-  } = useSiweAuth();
-  
+  const { authenticate, sessionToken, isSessionValid, error: authError } = useSiweAuth();
+
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +43,11 @@ export default function TeacherProfilePage() {
   });
   const [courses, setCourses] = useState<any[]>();
   const lensBalance = useLensBalance(address);
+
+  // 关联表单控件的可访问性 id
+  const nameId = useId();
+  const emailId = useId();
+  const bioId = useId();
 
   // 加载用户资料
   useEffect(() => {
@@ -86,11 +86,11 @@ export default function TeacherProfilePage() {
         args: [address],
       })) as any[];
       setCourses(coursesData);
-    }
+    };
 
     loadProfile();
     loadCourseData();
-  }, [address, isConnected]);
+  }, [address, isConnected, COURSE_MARKET_ABI, courseMarketAddress, publicClient]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -117,14 +117,17 @@ export default function TeacherProfilePage() {
 
       // 如果会话有效，直接使用 token 保存
       if (isSessionValid && sessionToken) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`,
-          },
-          body: JSON.stringify({ address, profile: formData }),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${sessionToken}`,
+            },
+            body: JSON.stringify({ address, profile: formData }),
+          }
+        );
 
         // 401 表示会话过期，静默重新认证并保存
         if (response.status === 401) {
@@ -168,14 +171,17 @@ export default function TeacherProfilePage() {
       const { token: newToken } = await authenticate(address);
 
       // 使用新 token 直接发送请求，不依赖状态更新
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${newToken}`,
-        },
-        body: JSON.stringify({ address, profile: formData }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/profile`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${newToken}`,
+          },
+          body: JSON.stringify({ address, profile: formData }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -220,7 +226,7 @@ export default function TeacherProfilePage() {
             {error}
           </div>
         )}
-        
+
         {/* 成功提示 */}
         {success && (
           <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-200">
@@ -242,10 +248,17 @@ export default function TeacherProfilePage() {
               {/* 基本信息 */}
               {!isEditing ? (
                 <>
-                  <h2 className="text-2xl font-bold text-white text-center mb-2">{profile?.name || 'Unknown'}</h2>
-                  <p className="text-gray-400 text-center text-sm mb-4">{profile?.email || 'No email'}</p>
-                  <p className="text-gray-400 text-center text-sm mb-6 line-clamp-3">{profile?.bio || 'No bio'}</p>
+                  <h2 className="text-2xl font-bold text-white text-center mb-2">
+                    {profile?.name || 'Unknown'}
+                  </h2>
+                  <p className="text-gray-400 text-center text-sm mb-4">
+                    {profile?.email || 'No email'}
+                  </p>
+                  <p className="text-gray-400 text-center text-sm mb-6 line-clamp-3">
+                    {profile?.bio || 'No bio'}
+                  </p>
                   <button
+                    type="button"
                     onClick={() => setIsEditing(true)}
                     className="w-full px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all font-semibold border border-white/20"
                   >
@@ -255,7 +268,7 @@ export default function TeacherProfilePage() {
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">头像</label>
+                    <span className="text-xs text-gray-400 mb-1 block">头像</span>
                     <div className="grid grid-cols-6 gap-2 mb-3">
                       {['👨‍🏫', '👩‍🏫', '🧑‍💼', '👨‍💻', '👩‍💻', '🧑‍🎓'].map((emoji) => (
                         <button
@@ -266,6 +279,7 @@ export default function TeacherProfilePage() {
                               ? 'bg-green-500/50 border-green-500'
                               : 'bg-white/10 border-white/20'
                           } border`}
+                          type="button"
                         >
                           {emoji}
                         </button>
@@ -273,37 +287,41 @@ export default function TeacherProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">名字</label>
+                    <label htmlFor={nameId} className="text-xs text-gray-400 mb-1 block">名字</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      id={nameId}
                       className="w-full px-3 py-2 bg-slate-700/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">邮箱</label>
+                    <label htmlFor={emailId} className="text-xs text-gray-400 mb-1 block">邮箱</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
+                      id={emailId}
                       className="w-full px-3 py-2 bg-slate-700/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">个人简介</label>
+                    <label htmlFor={bioId} className="text-xs text-gray-400 mb-1 block">个人简介</label>
                     <textarea
                       name="bio"
                       value={formData.bio}
                       onChange={handleInputChange}
                       rows={3}
+                      id={bioId}
                       className="w-full px-3 py-2 bg-slate-700/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button
+                      type="button"
                       onClick={handleSave}
                       disabled={isSaving}
                       className="flex-1 px-3 py-2 bg-green-500/80 hover:bg-green-600 disabled:opacity-50 text-white rounded-lg transition-all font-semibold"
@@ -311,6 +329,7 @@ export default function TeacherProfilePage() {
                       {isSaving ? '保存中...' : '保存'}
                     </button>
                     <button
+                      type="button"
                       onClick={() => setIsEditing(false)}
                       className="flex-1 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all font-semibold"
                     >
@@ -327,11 +346,15 @@ export default function TeacherProfilePage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">钱包地址</p>
-                  <p className="text-sm font-mono text-blue-400 break-all">{profile?.walletAddress || address}</p>
+                  <p className="text-sm font-mono text-blue-400 break-all">
+                    {profile?.walletAddress || address}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">加入日期</p>
-                  <p className="text-sm text-gray-300">{profile?.joinDate || new Date().toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-300">
+                    {profile?.joinDate || new Date().toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -354,7 +377,9 @@ export default function TeacherProfilePage() {
                 <div className="relative">
                   <div className="text-4xl mb-3">💎</div>
                   <p className="text-gray-400 text-sm mb-2">总收益 (LENS)</p>
-                  <p className="text-3xl font-bold text-yellow-400">{lensBalance?.data ? formatEther(lensBalance?.data as bigint) : '0'}</p>
+                  <p className="text-3xl font-bold text-yellow-400">
+                    {lensBalance?.data ? formatEther(lensBalance?.data as bigint) : '0'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -364,8 +389,11 @@ export default function TeacherProfilePage() {
               <h3 className="text-xl font-bold text-white mb-4">专业认证</h3>
               <div className="space-y-2">
                 {(profile?.certifications || []).length > 0 ? (
-                  (profile?.certifications || []).map((cert, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 transition-all">
+                  (profile?.certifications || []).map((cert) => (
+                    <div
+                      key={cert}
+                      className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 transition-all"
+                    >
                       <span className="text-xl">🏆</span>
                       <span className="text-gray-300">{cert}</span>
                     </div>
@@ -375,7 +403,6 @@ export default function TeacherProfilePage() {
                 )}
               </div>
             </div>
-
           </div>
         </div>
       </main>
